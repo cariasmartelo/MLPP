@@ -11,6 +11,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sodapy import Socrata
 
+CRIME_CLASS = \
+    {'Violent Crime': ['01A', '02', '03', '04A', '04B'],
+     'Property Crime': ['05', '06', '07', '09'],
+     'Less serious offences': ['01B', '08A', '08B', '10', '11', '12', '13',\
+                               '14', '15', '16', '17', '18', '19', '20', '22',\
+                                '24', '26']}
+
 def load_crime_data(limit):
     '''
     Load 2017 and 2018 Chicago crime data from City of Chicago Open Data portal
@@ -28,7 +35,8 @@ def load_crime_data(limit):
     crime_df = pd.DataFrame.from_dict(crime)
 
     #Seting up types
-    for col in ['year', 'ward', 'y_coordinate', 'x_coordinate', 'latitude', 'longitude']:
+    for col in ['year', 'ward', 'y_coordinate', 'x_coordinate', 'latitude',\
+                'longitude']:
         crime_df[col] = pd.to_numeric(crime_df[col], errors = "coerce")
 
     for col in ['arrest', 'domestic']:
@@ -36,6 +44,14 @@ def load_crime_data(limit):
 
     for col in ['date', 'updated_on']:
         crime_df[col] = pd.to_datetime(crime_df[col])
+
+    #Adding clasification column
+    crime_class_inv = {}
+    for k, v in CRIME_CLASS.items():
+        for code in v:
+            crime_class_inv[code] = k
+
+    crime_df['crime_class'] = crime_df['fbi_code'].map(crime_class_inv)
 
     return crime_df
 
@@ -63,12 +79,13 @@ def make_cross_type_year(df):
     return cross_type_year
 
 
+
 def graph_cross_type_year(cross_type_year):
     '''
     Bar graph of type of crime by year
     '''
     plt.clf
-    df = cross_type_year.iloc[1:]
+    df = cross_type_year.iloc[1:21]
     ind = np.arange(len(df))  # the x locations for the groups
     width = 0.35  # the width of the bars
     fig, ax = plt.subplots()
@@ -79,11 +96,12 @@ def graph_cross_type_year(cross_type_year):
 
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel('Freq')
-    ax.set_title('Frequency of crimes in Chicago by year and type of crime')
+    ax.set_title('Frequency of 20 most common types of crimes in Chicago (2017 and 2018)')
     ax.set_xticks(ind)
     ax.set_xticklabels(df.index)
     ax.legend()
     plt.xticks(rotation=90)
+    plt.tight_layout()
     plt.show()
 
 
