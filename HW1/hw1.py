@@ -6,11 +6,12 @@ Spring 2019
 Professor: Rayid Ghani
 Camilo Arias
 '''
-import numpy as np
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from sodapy import Socrata
 import geopandas as gpd
+from shapely.geometry import Point, Polygon, MultiPoint, shape
 
 CRIME_CLASS = \
     {'Violent Crime': ['01A', '02', '03', '04A', '04B'],
@@ -152,9 +153,52 @@ def load_community_area_data():
     community_area= client.get("igwz-8jzy")
 
     community_area_df = pd.DataFrame.from_dict(community_area)
+    community_area_df.rename(columns={'the_geom' : 'location'})
 
     return community_area_df
 
+
+def convert_to_geopandas(df):
+    '''
+    Converts the pandas dataframe to geopandas to plot.
+    Inputs:
+        Pandas Df
+    Output:
+        Geopandas Df
+    '''
+    def shape_(x):
+
+        '''
+        Convert JSON location attribute to shapely.
+        '''
+        if isinstance(x, float):
+            return np.NaN
+        return shape(x)
+
+
+    df['geometry'] = crime_df.location.apply(shape_)
+    geo_df = gdp.GeoDataFrame(df, crs = 'epsg:4326', geometry = df['geometry'])
+
+    return geo_df
+
+
+def map_crimes(geo_comm, geo_crime, filer_col, filter_vals, color_col = None):
+    '''
+    Produce a map of the crimes in Chicago over a neighborhood map.
+    Inputs:
+        geo_comm: GeoPandasDf
+        geo_crime: GeoPandasDf
+        filter_col: Str
+        filter_vals: [str]
+        color_col: str
+    '''
+    plt.clf()
+    base = geo_comm.plot(color='white', edgecolor='black') 
+    geo_crime[geo_crime[filer_col] == filter_vals].plot(ax=base, marker='.',
+                column = color_col ,markersize=4, legend = True)
+    plt.title('{}s in Chicago (2017 and 2018)'.format(filter_vals.capitalize()))
+    plt.show()
+    plt.clf()
 
 
 
