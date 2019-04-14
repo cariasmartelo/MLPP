@@ -1,4 +1,9 @@
-# MLPP
-Machine Learning for Public Policy
+# Machine Learning for Public Policy - Spring 2019
 
-Homework 1 found in HW1 folder, in the hw1.pdf file.
+##Student repository
+
+
+Each homework found in respective HWX folder.
+
+
+
