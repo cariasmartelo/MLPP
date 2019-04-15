@@ -11,9 +11,14 @@ chi_opdat.py: Functions to obtain data from the Chicago Open Data Portal. It is 
 
 ### Libraries used:
 -Numpy
+
 -Pandas
+
 -Geopandas
+
 -sodapy
+
 -matplotlib
+
 -shapely
 
