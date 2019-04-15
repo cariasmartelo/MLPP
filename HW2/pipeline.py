@@ -14,6 +14,8 @@ import geopandas as gpd
 from shapely.geometry import Point, Polygon, MultiPoint, shape
 import chi_opdat
 
+OUTCOME_VAR = 'SeriousDlqin2yrs'
+
 def load_credit_data(csv_file_path):
     '''
     Load csv file with credit data to a Pandas DataFrame.
@@ -40,6 +42,7 @@ def load_credit_data(csv_file_path):
 
     return credit_df
 
+
 def load_zipcode_area():
     '''
     Load 2017 and 2018 Chicago crime data from City of Chicago Open Data portal
@@ -53,8 +56,10 @@ def load_zipcode_area():
                                           .API_ENDPOINTS['ZIP_CODE_BOUNDARIES'])
     ziparea_df.rename(columns={'zip' : 'zipcode'}, 
                                 inplace = True)
+    ziparea_df['zipcode'] = pd.to_numeric(ziparea_df['zipcode'])
     ziparea_gdf = chi_opdat.convert_to_geopandas(ziparea_df)
     return ziparea_gdf
+
 
 def see_histograms(credit_df, columns=None):
     '''
@@ -86,6 +91,7 @@ def see_histograms(credit_df, columns=None):
         axs[column].set_title(column)
     plt.show()
 
+
 def see_summary_stats(credit_df, columns=None):
     '''
     Return summary statistics for all columns credit df. Is columns specified,
@@ -99,6 +105,7 @@ def see_summary_stats(credit_df, columns=None):
         print(credit_df.describe())
     else:
         print(credit_df[columns].describe())
+
 
 def see_scatterplot(credit_df, xcol, ycol, colorcol=None):
     '''
@@ -116,13 +123,27 @@ def see_scatterplot(credit_df, xcol, ycol, colorcol=None):
     if not colorcol:
         credit_df.plot.scatter(x=xcol, y=ycol, legend=True)
     else:
-        credit_df.plot.scatter(x=xcol, y=ycol, c=colorcol, colormap='viridis',
+        credit_df.plot.scatter(x=xcol, y=ycol, c=colorcol, cmap='viridis',
                                legend=True)
     plt.title('Scatterplot of Credit DataFrame \n {} and {}'
                   .format(xcol, ycol))
     plt.show()
 
-def map(credit_df, zip_gdf, colorcol, funct='mean'):
+
+def summary_by_objective(credit_df, funct='mean'):
+    '''
+    See data by Objective column, aggregated by function.
+    Input:
+        credit_df: Pandas DataFrame
+        funct: str
+    Output:
+        Pandas DF
+    '''
+    return credit_df.groupby(OUTCOME_VAR).agg('mean').T
+
+
+def map(credit_df, zip_gdf, colorcol=OUTCOME_VAR, funct='mean',
+        count=False):
     '''
     Map by zip code the value of the column indicated in colorcol aggregated
     with the function specified.
@@ -131,5 +152,27 @@ def map(credit_df, zip_gdf, colorcol, funct='mean'):
         zip_gdf: ZipCode Boundaries GeodataFrame
         colorcol: Str
         funct: str
+    Output:
+        Map
+    '''
+    if count:
+        credit_by_zip = credit_df.groupby('zipcode').size().reset_index()
+        credit_by_zip.rename(columns={0:'count'}, inplace = True)
+        colorcol = 'count'
+
+    else:
+        credit_by_zip = credit_df.groupby('zipcode').agg({colorcol: funct})
+    
+    credit_gdf = zip_gdf.merge(credit_by_zip, on='zipcode', how='left')
+    ax = credit_gdf.plot(color="grey")
+    credit_gdf.dropna().plot(ax=ax, column=colorcol, cmap='viridis',
+                             legend=True)
+    if count:
+        ax.set_title('Frequency of reports in Chicago by zipcode\n'
+                     '(Zip codes without data in grey)')
+    else:
+        ax.set_title('{} {} in Chicago by zipcode\n(Zip codes without data'
+                     ' in grey)'.format(funct.capitalize(), colorcol))
+    plt.show()
 
 
