@@ -79,10 +79,7 @@ def see_histograms(credit_df, columns=None):
     for column in columns:
         if not credit_df[column].dtype.kind in 'ifbc':
             continue
-        if credit_df[column].dtype.kind in 'if':
-            num_bins = 20
-        if credit_df[column].dtype.kind in 'bc':
-            num_bins = credit_df[column].nunique()
+        num_bins = min(20, credit_df[column].nunique())
 
         figs[column] = plt.figure()
         axs[column] = figs[column].add_subplot(111)
@@ -107,7 +104,7 @@ def see_summary_stats(credit_df, columns=None):
         print(credit_df[columns].describe())
 
 
-def see_scatterplot(credit_df, xcol, ycol, colorcol=None):
+def see_scatterplot(credit_df, xcol, ycol=OUTCOME_VAR, colorcol=None):
     '''
     Print scatterplot of columns specified of the credit df. If color column
     is specified, the scatterplot will be colored by that column.
@@ -174,5 +171,4 @@ def map(credit_df, zip_gdf, colorcol=OUTCOME_VAR, funct='mean',
         ax.set_title('{} {} in Chicago by zipcode\n(Zip codes without data'
                      ' in grey)'.format(funct.capitalize(), colorcol))
     plt.show()
-
 
