@@ -248,3 +248,21 @@ def fillna(credit_df, columns=None, funct='mean'):
         filled_df[column] = (filled_df[column]
                              .fillna(filled_df[column].agg(funct)))
     return filled_df
+
+
+def discretize(serie, bins, equal_width=False):
+    '''
+    Function to discretize a pandas series based on number of bins and
+    wether bins are equal width, or have equal number of observations.
+    Inputs:
+        serie: Pandas Series
+        bins: int(num of bins)
+        equal_width: bool
+    Output:
+        Pandas Series.
+    '''
+    if not equal_width:
+        return pd.qcut(serie, bins)
+    else:
+        return pd.cut(serie, bins)
+
