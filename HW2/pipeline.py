@@ -61,35 +61,70 @@ def load_zipcode_area():
     return ziparea_gdf
 
 
-def see_histograms(credit_df, columns=None):
+def restrict_df(credit_df, restrict):
+    '''
+    Will return a DataFrame restricted by the percentile values indicated
+    in the restrict dictionary.
+    Inputs:
+        credit_df: Pandas DataFrame
+        restirc: dict
+    Output:
+        Pandas DataFrame
+    '''
+    restricted_df = credit_df
+    for column in restrict:
+        min_val = credit_df[column].quantile(restrict[column][0])
+        max_val = credit_df[column].quantile(restrict[column][1])
+        restricted_df = restricted_df.loc[(
+            (restricted_df[column] <= max_val)
+            | (restricted_df[column].isna())) 
+            & ((restricted_df[column] >= min_val)
+            | (restricted_df[column].isna()))]
+
+    return restricted_df
+
+
+def see_histograms(credit_df, columns=None, restrict=None):
     '''
     Produce histograms of the numeric columns in credit_df. If columns is
-    specified, it produces histograms of those columns.
+    specified, it produces histograms of those columns. If restrict dictionary
+    is specified, restricts to the values inside the percentile range specified.
     Inputs:
         credit_df: Pandas DataFrame
         columns: [colname]
+        restrict = dict
     Output:
         Individual Graphs (Num of graphs = Num of numeric cols)
     '''
     plt.clf()
     figs = {}
     axs = {}
+    if not restrict:
+        restrict = {}
     if not columns:
         columns = credit_df.columns
     for column in columns:
         if not credit_df[column].dtype.kind in 'ifbc':
             continue
-        num_bins = min(20, credit_df[column].nunique())
+        if column in restrict:
+            min_val = credit_df[column].quantile(restrict[column][0])
+            max_val = credit_df[column].quantile(restrict[column][1])
+            col_to_plot = (credit_df.loc[(credit_df[column] <= max_val)
+                             & (credit_df[column] >= min_val), column])
+        else:
+            col_to_plot = credit_df[column]
+
+        num_bins = min(20, col_to_plot.nunique())
 
         figs[column] = plt.figure()
         axs[column] = figs[column].add_subplot(111)
-        n, bins, patches = axs[column].hist(credit_df[column], num_bins,
+        n, bins, patches = axs[column].hist(col_to_plot, num_bins,
                                             facecolor='blue', alpha=0.5)
         axs[column].set_title(column)
     plt.show()
 
 
-def see_summary_stats(credit_df, columns=None):
+def see_summary_stats(credit_df, columns=None, percentiles=None):
     '''
     Return summary statistics for all columns credit df. Is columns specified,
     produces summary statistics of those columns.
@@ -98,13 +133,16 @@ def see_summary_stats(credit_df, columns=None):
     Output:
         Print
     '''
+    if not percentiles:
+        percentiles = [.25, .5, .75]
     if not columns:
-        print(credit_df.describe())
+        print(credit_df.describe(percentiles=percentiles))
     else:
-        print(credit_df[columns].describe())
+        print(credit_df[columns].describe(percentiles=percentiles))
 
 
-def see_scatterplot(credit_df, xcol, ycol=OUTCOME_VAR, colorcol=None):
+def see_scatterplot(credit_df, xcol, ycol=OUTCOME_VAR, colorcol=None, logx=False,
+                    logy=False, xjitter=False, yjitter=False):
     '''
     Print scatterplot of columns specified of the credit df. If color column
     is specified, the scatterplot will be colored by that column.
@@ -113,21 +151,34 @@ def see_scatterplot(credit_df, xcol, ycol=OUTCOME_VAR, colorcol=None):
         xcol: String
         ycol: String
         colorcol: String
+        logx, logy: bool
+        xiitter, yitter: bool
     Output:
         Graph
     '''
+    df_to_plot = credit_df.loc[:]
+    if xjitter:
+        df_to_plot[xcol] = df_to_plot[xcol] +\
+            np.random.uniform(-0.5, 0.5, len(df_to_plot[xcol]))\
+            *df_to_plot[xcol].std()
+    if yjitter:
+        df_to_plot[ycol] = df_to_plot[ycol] +\
+            np.random.uniform(-0.5, 0.5, len(df_to_plot[ycol]))\
+            *df_to_plot[ycol].std()
+
     plt.clf()
     if not colorcol:
-        credit_df.plot.scatter(x=xcol, y=ycol, legend=True)
+        df_to_plot.plot.scatter(x=xcol, y=ycol, legend=True, logx=logx,
+                               logy=logy)
     else:
-        credit_df.plot.scatter(x=xcol, y=ycol, c=colorcol, cmap='viridis',
-                               legend=True)
+        df_to_plot.plot.scatter(x=xcol, y=ycol, c=colorcol, cmap='viridis',
+                               legend=True, logx=logx, logy=logy)
     plt.title('Scatterplot of Credit DataFrame \n {} and {}'
                   .format(xcol, ycol))
     plt.show()
 
 
-def summary_by_objective(credit_df, funct='mean'):
+def summary_by_objective(credit_df, funct='mean', count=False):
     '''
     See data by Objective column, aggregated by function.
     Input:
@@ -136,7 +187,13 @@ def summary_by_objective(credit_df, funct='mean'):
     Output:
         Pandas DF
     '''
-    return credit_df.groupby(OUTCOME_VAR).agg('mean').T
+    if not count:
+        sum_table =  credit_df.groupby(OUTCOME_VAR).agg('mean').T
+    else:
+        sum_table = credit_df.groupby(OUTCOME_VAR).size().T
+    sum_table['perc diff'] = ((sum_table[1] / sum_table[0]) -1) * 100
+
+    return sum_table
 
 
 def map(credit_df, zip_gdf, colorcol=OUTCOME_VAR, funct='mean',
@@ -172,3 +229,22 @@ def map(credit_df, zip_gdf, colorcol=OUTCOME_VAR, funct='mean',
                      ' in grey)'.format(funct.capitalize(), colorcol))
     plt.show()
 
+
+def fillna(credit_df, columns=None, funct='mean'):
+    '''
+    Fill the np.nan values of the DataFrame with the function specified.
+    If column is specified, only fills that column.
+    Inputs:
+        credit_df: Pandas DataFrame
+        columns: [str]
+        funct: str
+    Output:
+        Pandas DataFrame
+    '''
+    if not columns:
+        return credit_df.fillna(credit_df.agg(funct))
+    filled_df = credit_df[:]
+    for column in columns:
+        filled_df[column] = (filled_df[column]
+                             .fillna(filled_df[column].agg(funct)))
+    return filled_df
