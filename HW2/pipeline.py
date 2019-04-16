@@ -105,6 +105,13 @@ def see_histograms(credit_df, columns=None, restrict=None):
         columns = credit_df.columns
     for column in columns:
         if not credit_df[column].dtype.kind in 'ifbc':
+            if credit_df[column].nunique() <= 15:
+                credit_df[column].value_counts(sort=False).plot(kind='bar')
+                plt.tight_layout()
+                plt.title(column)
+                continue
+        if credit_df[column].dtype.kind in 'c':
+            credit_df[column].value_counts().plot(kind='bar')
             continue
         if column in restrict:
             min_val = credit_df[column].quantile(restrict[column][0])
@@ -265,4 +272,19 @@ def discretize(serie, bins, equal_width=False):
         return pd.qcut(serie, bins)
     else:
         return pd.cut(serie, bins)
+
+def make_dummies_from_categorical(serie, dummy_na=False):
+    '''
+    Function that takes a categorical Pandas series and returns a Pandas
+    Dataframe of dummy variables. If dummy_na True, make dummy for NA values.
+        serie: Pandas Series
+        dummy_na: bool
+    Output:
+        Pandas Data Frame.
+    '''
+    return pd.get_dummies(serie, serie.name, dummy_na=  dummy_na)
+
+
+
+
 
