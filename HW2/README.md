@@ -3,11 +3,17 @@
 ## Homework 2
 
 ### Organization:
--inputs: Has the credit csv and dictionary xls
--pipeline.py: Main functions for the pipeline.
--pipeline_demo.ipynb: Jupyter notebook that demonstrates the use of the pipeline with the credit data.
-chi_opdat.py: Functions to obtain data from the Chicago Open Data Portal. It is called by pipeline.py
--pipeline_demo.pdf: PDF of Jupyter Notebook
+
+- pipeline_demo.pdf: Demo of pipeline usage in pdf. (Homework answer)
+
+- pipeline.py: Main functions for the pipeline.
+
+- pipeline_demo.ipynb: Jupyter notebook that demonstrates the use of the pipeline with the credit data.
+
+- chi_opdat.py: Functions to obtain data from the Chicago Open Data Portal. It is called by pipeline.py
+
+- inputs: Has the credit csv and dictionary xls.
+
 
 ### Libraries used:
 - Numpy 1.15.4
