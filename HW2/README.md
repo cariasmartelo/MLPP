@@ -10,17 +10,17 @@ chi_opdat.py: Functions to obtain data from the Chicago Open Data Portal. It is 
 -pipeline_demo.pdf: PDF of Jupyter Notebook
 
 ### Libraries used:
--Numpy 1.15.4
+- Numpy 1.15.4
 
--Pandas 0.24.2
+- Pandas 0.24.2
 
--Geopandas 0.4.0+67.g08ad2bf
+- Geopandas 0.4.0+67.g08ad2bf
 
--sodapy 1.5.2
+- sodapy 1.5.2
 
--matplotlib 3.0.3
+- matplotlib 3.0.3
 
--shapely 1.6.4.post2
+- shapely 1.6.4.post2
 
 - scikit-learn 0.20.3
 
