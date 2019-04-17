@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from sodapy import Socrata
 import geopandas as gpd
 from shapely.geometry import Point, Polygon, MultiPoint, shape
+from sklearn import tree
 import chi_opdat
 
 OUTCOME_VAR = 'SeriousDlqin2yrs'
@@ -257,10 +258,11 @@ def fillna(credit_df, columns=None, funct='mean'):
     return filled_df
 
 
-def discretize(serie, bins, equal_width=False):
+def discretize(serie, bins, equal_width=False, string=False):
     '''
     Function to discretize a pandas series based on number of bins and
     wether bins are equal width, or have equal number of observations.
+    If string = True, returns string type.
     Inputs:
         serie: Pandas Series
         bins: int(num of bins)
@@ -269,9 +271,14 @@ def discretize(serie, bins, equal_width=False):
         Pandas Series.
     '''
     if not equal_width:
-        return pd.qcut(serie, bins)
+        return_serie =  pd.qcut(serie, bins)
     else:
-        return pd.cut(serie, bins)
+        return_serie = pd.cut(serie, bins)
+    if string:
+    	return_serie = return_serie.astype(str)
+
+    return return_serie
+
 
 def make_dummies_from_categorical(serie, dummy_na=False):
     '''
@@ -285,6 +292,53 @@ def make_dummies_from_categorical(serie, dummy_na=False):
     return pd.get_dummies(serie, serie.name, dummy_na=  dummy_na)
 
 
+def build_tree_classifier(train_df, xcol, ycol=OUTCOME_VAR):
+    '''
+    Fit a decision tree model to the data provided, given the ycol and the set
+    of x cols.
+    Inputs:
+        credit_df: Pandas DataFrame
+        ycol: string
+        xcol: [str]
+    Output:
+
+    Classifier
+    '''
+    assert not (train_df[xcol].isna().any().any()), "No NaN values in x allowed"
+    assert not (train_df[ycol].isna().any().any()), "No NaN values in y allowed"
+
+    clf = tree.DecisionTreeClassifier()
+    clf = clf.fit(train_df[xcol], train_df[ycol])
+    return clf
 
 
+def obtain_predicted_probabilities(tree, test_df, xcol):
+    '''
+    Obtain predicted probabilities of success for test data given a tree
+    classifier and a list of the x columns. 
+    '''
+    return tree.predict_proba(test_df[xcol])[:,1]
 
+
+def compute_accuracy(yvar_real, predict_proba, threshold=0.5):
+    '''
+    Compute the accuracy of a predition based on the predicted probabilities,
+    the real value of y and the threshold to consider a predicted success.
+    Inputs:
+        yvar_real: Pandas Series
+        predict_proba: Pandas Series
+        threshold: floar
+    Returns:
+        Pandas DataFrame
+    '''
+    predict_proba = pd.Series(predict_proba)
+    yvar_real = yvar_real.to_frame().reset_index().iloc[:,1]
+    results = pd.DataFrame(index=np.arange(0, len(yvar_real)))
+    results['yvar_real'] = yvar_real
+    results['predict_proba'] = predict_proba
+    results['yvar_predicted'] = np.where(results['predict_proba']
+                                    > threshold, 1, 0)
+    results['correct'] = np.where(results['yvar_predicted'] == results['yvar_real'],
+                                  'Correct', 'Incorrect')
+    return pd.crosstab(results['yvar_real'], results['correct'], margins=True,
+                       normalize='index')
