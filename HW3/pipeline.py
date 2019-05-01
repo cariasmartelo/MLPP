@@ -1,6 +1,6 @@
 '''
 CAPP 30254 1 Machine Learning for Public Policy
-Pipeline functions for HW2
+Pipeline functions for HW3
 Spring 2019
 Professor: Rayid Ghani
 Camilo Arias
@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from sklearn import tree
 from shapely.geometry import Point
 import geopandas as gpd
+from datetime import datetime
 
 def load_from_csv(csv_file_path):
     '''
@@ -72,8 +73,8 @@ def create_outcome_var(projects_df, days):
     '''
     df = projects_df.loc[:]
     df['days_untill_funded'] = (df['datefullyfunded'] - df['date_posted']).dt.days
-    outcome_var = "funded_in_{}_days".format(days)
-    df[outcome_var] = np.where(df['days_untill_funded'] <= days, 1, 0)
+    outcome_var = "not_funded_in_{}_days".format(days)
+    df[outcome_var] = np.where(df['days_untill_funded'] > days, 1, 0)
 
     return df
 
@@ -185,7 +186,6 @@ def see_histograms(project_df, columns=None, restrict=None):
     if not columns:
         columns = project_df.columns
     for column in columns:
-        print(column)
         if not project_df[column].dtype.kind in 'ifbc':
             if project_df[column].nunique() <= 15:
                 project_df[column].value_counts(sort=False).plot(kind='bar')
@@ -212,7 +212,6 @@ def see_histograms(project_df, columns=None, restrict=None):
         axs[column] = figs[column].add_subplot(111)
         n, bins, patches = axs[column].hist(col_to_plot, num_bins,
                                             facecolor='blue', alpha=0.5)
-        print('a plott')
         axs[column].set_title(column)
     plt.show()
 
@@ -245,12 +244,12 @@ def make_dummies_from_categorical(project_df, columns, dummy_na=False):
     Output:
         Pandas Data Frame.
     '''
-    df = project_df.loc[:]
-    for col in columns:
-        dummies = pd.get_dummies(project_df[col], col, dummy_na=dummy_na)
-        df = df.join(dummies)
+    #df = project_df.loc[:]
+    #for col in columns:
+    dummies = pd.get_dummies(project_df, dummy_na=dummy_na, columns= columns)
+    #    df = df.join(dummies)
 
-    return df
+    return dummies
 
 
 def delete_columns(project_df, columns):
@@ -266,6 +265,26 @@ def delete_columns(project_df, columns):
     return df.drop(columns, axis=1)
 
 
+def discretize(serie, bins, equal_width=False, string=False):
+    '''
+    Function to discretize a pandas series based on number of bins and
+    wether bins are equal width, or have equal number of observations.
+    If string = True, returns string type.
+    Inputs:
+        serie: Pandas Series
+        bins: int(num of bins)
+        equal_width: bool
+    Output:
+        Pandas Series.
+    '''
+    if not equal_width:
+        return_serie =  pd.qcut(serie, bins)
+    else:
+        return_serie = pd.cut(serie, bins)
+    if string:
+        return_serie = return_serie.astype(str)
+
+    return return_serie
 
 
 def see_scatterplot(project_df, xcol, ycol, colorcol=None, logx=False,
@@ -304,3 +323,21 @@ def see_scatterplot(project_df, xcol, ycol, colorcol=None, logx=False,
                   .format(xcol, ycol))
     plt.show()
 
+
+def set_semester(date_series):
+    '''
+    Returns a pandas Series that indicates the semester of the date series
+    as an integer from 0 to 3 (0 -> first semester of 2012, 3-> last semester
+    of 2013)
+    Inputs:
+        date_series: Datetime series
+    '''
+    bins = pd.date_range('2012-07-01', end='2014-1-31', freq='183d')
+
+    def _semester(x, bins):
+        rv = 0
+        for i, v in enumerate(bins):
+            if x >= v:
+                rv += 1
+        return rv
+    return (date_series.apply(_semester, args=(bins,)), len(bins))
