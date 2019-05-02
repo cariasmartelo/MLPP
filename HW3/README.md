@@ -7,7 +7,7 @@
 
 - prediction.pdf: PDF run prediction of school project with cross validationl. It produces the table of models, threshold, cross validation and evaluation metrics.
 
-- prediction_table: csv of table of models, threshold, cross validation and evaluation metrics.
+- prediction_grid.csv: csv of table of models, threshold, cross validation and evaluation metrics.
 
 - prediction.ipynb: Jupyter notebook used to run prediction of school project
 with cross validationl. It produces the table needed. Uses prediction.py, pipeline.py and classifiers.py.
