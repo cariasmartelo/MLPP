@@ -3,9 +3,7 @@
 ## Homework 3
 
 ### Organization:
-- policy_memo.pdf: PDF of policy memo to donors organization.
-
-- prediction.pdf: PDF run prediction of school project with cross validationl. It produces the table of models, threshold, cross validation and evaluation metrics.
+- report.pdf: PDF report of prediction.
 
 - prediction_grid.csv: csv of table of models, threshold, cross validation and evaluation metrics.
 
