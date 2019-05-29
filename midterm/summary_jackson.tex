@@ -1,0 +1,143 @@
+\documentclass[a4paper, 11pt]{article}
+\usepackage{comment} % enables the use of multi-line comments (\ifx \fi) 
+\usepackage{lipsum} %This package just generates Lorem Ipsum filler text. 
+\usepackage{fullpage} % changes the margin
+\usepackage{amsmath}
+\usepackage{kbordermatrix}
+\usepackage{hanging}
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+\begin{document}
+%Header-Make sure you update this information!!!!
+\noindent
+\large\textbf{Summary 2}.\\
+\normalsize ECON 34901 1 \hfill Camilo Arias \\
+Prof. Steven Durlauf \hfill Date: 05/31/2019 \\\\
+\large 
+Jackson, M. and A. Wolinsky, (1996), “A Strategic Model of Social and Economic Networks,”
+\textit{Journal of Economic Theory}, 71, 44-74.
+
+\section*{A Freedom Network Analysis}
+
+The main objective of Jackson and Wollinsky with this article is to study networks in which nodes have freedom to decide with what other nodes they want link. In this free environment, a link is formed between two nodes if the two want to form a link, but the destruction can be made unilaterally. The authors seek to understand what graphs that result from this process are stable, and what is the relationship of stability and productive efficiency of a graph. The production function of a graph and the allocation function are the decisive components in the analysis. The authors first give the key definitions of their model. Afterwards, they go through some specific applications of their model, demonstrating different production function and the results of each specification. Then, they analyze how the general model behaves with different allocation rules. Finally, they conclude with the implications of equal bargaining power for allocation rules.
+
+\section*{The model}
+With a universe of $N$ agents, where $N = \{1, ..., N\}$, the authors define a graph as a set of subsets of N $\{i, j\}$s. Each of those subsets will be denoted as \textit{link} between $i$ and $j$ and will be represented as $ij$. The complete graph $g^N$, is the set of all the possible links in N. The set of all possible graphs of $N$ are all the possible subsets of the complete graph: $\{g | g \in g^N\}$. With $N = 10$, examples of two graphs and the complete graph can be seen in Figure~\ref{fig:examples}.
+
+\begin{figure}[hbt!]
+    \centering
+     \caption{Examples of graphs of 10 nodes}
+     \label{fig:examples}
+     \includegraphics[scale = 0.7]{graph_images/graphs_of_10}
+\end{figure}
+
+A path between node $i$ and node $j$ is a set of links in a graph that connect both nodes. In a path, unlike a walk, no node is visited more than once. A component $g^\prime \subset g$ is a connected graph that does not break any link. In other words, for any node $i$ in $g^\prime$, $g^\prime$ includes all the links of $i$ in $g$. In Figure~\ref{fig:examples}, $g1$ and $g^N$ have only one component, and $g2$ has two.\\
+
+Each graph produces a value represented by the real numbers. There are production or value functions $v(g) : \{g|g \in g^N\} \rightarrow {\rm I\!R}$. Some production functions are defined as the aggregation of individual production functions in the graph, like the sum of the production function of every link in the graph. The set of all production functions $v$ is represented by $V$. For each graph and production function, the total value is allocated to the different nodes of the graph. An allocation is represented as a vector of ${\rm I\!R}^N$, where specific allocation of $i$ in graph $g$ with production function $v$ is represented by $Y_{i}(g, v)$ and corresponds to the i'th element of the vector. Allocations are given by an allocation function $Y : \{g|g \in g^N\} \times V \rightarrow {\rm I\!R}^N$.\\
+
+\subsection*{Efficiency} 
+Efficiency is measured by the value of a graph. If $v(g) > v(g^\prime)$, $v(g)$ is more efficient than $v(g^\prime)$. For a set $N$ a graph will be strongly efficient if it has the greatest value of all possible graphs. So, $g \subset g^N)$ is strongly efficient if $v(g) \geq v(g^\prime)$ for all $v(g^\prime) \subset g^N$.\\
+
+\subsection*{Stability} 
+Let's recall that these graphs represent networks that are formed by a free process. Thus, a graph can classified as \textit{stable} or \textit{unstable}. A stable graph is one where no agent wants to dissolve a link she is present in, and no pair of agents want to form a new link that has not been formed. In the example in Figure ~\ref{fig:stability}
+:
+\begin{enumerate}
+	\item $g$ is stable with respect to link $\{1, 2\}$ if not $1$ or $2$ prefers to dissolve the link than to have it. That is, both $1$ and $2$ prefer to be in $g$ than in $g^\prime$.
+	\item $g$ is stable with respect to link $1$ and $7$ if not $1$ and $7$ want to form a link. That is, $1$ or $2$ prefer to be in $g$ than in $g^\prime$.
+\end{enumerate}
+\begin{figure}[hbt!]
+    \centering
+     \caption{Stability examples}
+     \label{fig:stability}
+    \includegraphics[scale=0.7]{graph_images/stability_with_peterson}
+\end{figure}
+
+\section*{The connections model}
+In the connections model, agents benefit from being connected to other agents (having paths to other agents). The value of that $i$ gets from being connected with $j$ is $W_{ij}$. Closer connections give greater value, so distance is an important element for this model. $\delta$ will be the discount of distance, where $0 < \delta < 1$. Distance between agents $i$ and $j$, $t_{ij}$, will be defined as the number steps of the closest path from $i$ to $j$. Direct links imply a cost for each agent. The cost for $i$ of having a link with $j$ is $c_{ij}$. The utility that agent $i$ gets from graph $g$, and the total value of the graph are given by Equations \ref{eq:utility_connections} and \ref{eq:value_connections}.
+\begin{align} 
+u_{i}(g) &= \sum_{j}{\delta^{t_{ij}}W_{ij}} + \sum_{j: ij \in g}{c_{ij}} \label{eq:utility_connections}\\
+v(g) &= \sum_{i \in N}{u_{i}(g)} \label{eq:value_connections}
+\end{align}
+
+Equation \ref{eq:utility_connections} shows that the total utility for agent $i$ is the value of each of its connections minus the cost of its links. If no path exists between agents $i$ and $j$, $t_{ij}$ is set to $\infty$, then no value will be added by that connection. Equation \ref{eq:value_connections} shows that the total value of a graph is equal to the sum of individual utilities.
+
+\subsection*{Symmetric model}
+In the symmetric model, the cost of all links is constant $c_{ij} = 1$ as the value of each connection: $W_{ij} = 1$. In this model, agents are indifferent between what node they pair. They only decide to pair by comparing the benefits of having one extra link with the cost of maintaining it, against having an indirect connection. The utility of each agent is given by Equation \ref{eq:utility_symmetric}
+\begin{equation}
+	u_{i}(g) = \sum_{j}{\delta^{t_{ij}}} + \sum_{j: ij \in g}{c_{ij}} \label{eq:utility_symmetric}
+\end{equation}
+
+\subsubsection*{Efficiency in the symmetric model}
+The most efficient network will depend on how $\delta$ compares to $c$ and the size of the population. The proposition of the authors is the following:
+\begin{enumerate}
+	\item If $\delta - \delta ^ 2 > c$ , the strong efficient graph will be the complete graph $g^N$
+	\item if $\delta - \delta ^ 2 < c < \delta + \frac{N - 2}{2}\delta^2$, the strong efficient graph will be the connected star graph.
+	\item if $c > \delta + \frac{N - 2}{2}\delta^2$, the best graph will be the null graph.
+\end{enumerate}
+
+To analyze this proposition, we will first see it applied in a simple example of graphs with $N=4$. In Figure~\ref{fig:graphs_of_4} we show four graphs, a path graph, a star graph, the complete graph $g^N$ and an Erdos-Renyi graph with $P = 0.5$. In Table~\ref{Tab:Values_of_4} we see the value of each of these graphs. 
+
+\begin{figure}[hbt!]
+    \centering
+     \caption{Graphs of N = 4}
+     \label{fig:graphs_of_4}
+    \includegraphics[scale=0.7]{graph_images/graphs_of_4}
+\end{figure}
+\begin{table}[ht]
+\caption{Value of graphs in Figure \ref{fig:graphs_of_4}}
+\label{Tab:Values_of_4}
+	\begin{center}
+		\begin{tabular}{c c} 
+ 		\hline
+ 		Value of graph \\ [0.5ex] 
+ 		\hline
+ 		Path Graph & $6\delta + 4\delta^2 + 2\delta^3 - 6c$\\
+ 		 E-R Graph & $4\delta + 2\delta^2 - 4c$\\
+ 		 Star Graph & $6\delta + 6\delta^2 - 6c$\\
+   		$g^N$ & $12\delta - 12c$ \\ [1ex] 
+ 		\end{tabular}
+	\end{center}
+\end{table}
+
+In the first case of the proposition:  $\delta - c > \delta^2$. Analyzing the ER graph, the link $\{2, 3\}$ will contribute positively to the total value of the graph because the benefit from it $2\delta - 2c - 2\delta^2 > 0$. Following the same logic, a new link $\{0, 3\}$ in the path graph will be beneficial because the contribution $2\delta - 2c - 2\delta^3 > 0$. All new links will be beneficial because they are very cheap. Clearly the complete graph with total value of $8\delta + 12\delta^2 - 8c$ is the strictly efficient graph.\\
+
+In the second and third cases: $\delta - c < \delta^2$. Comparing the complete graph with the star graph, loosing links $\{1, 2\}, \{2, 3\}$ and $\{1, 3\}$ is beneficial to the total value. By dropping link $\{1, 2\}$, the value of the graph decreases in the direct value if the link: $2\delta$, and increases in the new indirect value minus the cost $2\delta^2 + 2c$. Net contribution is $2\delta^2 + 2c - 2\delta$, positive because $\delta < \delta^2 + c$. Similarly, the E-R graph would benefit if $1$ pairs with $0$ instead of pairing with $2$. In both cases, the new cost will be equal, as well as the new benefits from direct links. However, in terms of indirect links, the first option is better because it creates two new connections of degree two, which are greater than one second degree connection and one third degree connection. The difference between the second a third cases of the proposition is how great are the costs. If costs overpass a threshold, then dropping all links will be beneficial to the graph. Otherwise, the strongly efficient graph will be the star graph.\\
+
+Mathematically, the proof of cases (2) and (3) is the following:\\
+
+In a component $g^\prime \subset g$ with $m$ elements, the minimum number of links $k$ is $m-1$, and the maximum is $\frac{m(m-1)}{2}$. Then $(m-1) \leq k \leq \frac{m(m - 1)}{2}$. The value of the direct links is given by $k(2\delta - 2c)$. The remaining connections will be at most of second degree, and then their maximum value will be $(\frac{m(m-1)}{2}-k)2\delta^2$. The maximum value of this component is then given by Equation~\ref{eq:max_comp_val}\\
+\begin{equation}
+k(2\delta - 2c) + (m(m-1)-2k)\delta^2 \label{eq:max_comp_val}
+\end{equation}
+
+If the component $g^\prime$ is a star graph, then $k = m-1$ and the value of the graph is given by Equation~\ref{eq:star_val}\\
+\begin{align}
+(m-1)(2\delta - 2c) &+ (m(m-1)-2(m-1))\delta^2 = \nonumber \\
+(m-1)(2\delta - 2c) &+ (m-1)(m-2)\delta^2 \label{eq:star_val}
+\end{align}
+
+Subtracting the value of the star graph from the maximum value of the component (Equation~\ref{eq:max_comp_val} - Equation~\ref{eq:star_val}), is given by Equation~\ref{eq:difference}.
+\begin{equation*}
+(k - (m-1))(2\delta - 2c) + ((m(m-1)-2k) - (m-1)(m-2))\delta^2 =
+\end{equation*}
+\begin{equation}
+(k - (m-1))(2\delta - 2c - 2\delta^2) \label{eq:difference}
+\end{equation}
+
+Because $\delta - c < \delta^2$, Equation~\ref{eq:difference} is non positive. This means that the value of the star graph is greater or equal to the maximum value of the component. Equality is only met when $k = (m-1)$. Now, of the different networks of a component that has $k = 4$, the star gives the maximum total value because all the non direct connections will be of degree two. In Figure~\ref{fig:graphs_of_4}, the path and the star graph have the same number of links $k = 3$. However, on the path graph, some of the non-link connections are degree 3, while in the star graph, all are degree 2. This makes the total value of the graph greater for the star network. Now, the star will be unique because the value of one unique star of $g$ is greater than the value of two separate star components $g^\prime$ and $g^{\prime\prime}$. If we combine two stars of size $m$, the total value will be $(2m-1)((2\delta - 2c) + (2m-2)\delta^2)$ which is greater than two times Equation~\ref{eq:star_val} for any $m > 1$. Finally, for the case (3) of the proposition, if $c > \delta + ((N-2)/2)\delta^2$, then the value of the star graph won't be positive and the strongly efficient graph will be the empty graph.
+
+
+\newpage
+\section*{References}
+\begin{hangparas}{.25in}{1}
+Becker, G., (1973), "A Theory of Marriage Part 1" \textit{Journal of Political Economy}, 82, 6, 1063-1069.\\
+
+Chiappori, P. A., Reny, P. (2006). "Matching to share risk". \textit{manuscript http://home. uchicago. edu/~ preny/papers/matching-05-05-06. pdf.}\\
+
+Durlauf, S. and A. Seshadri, (2003), “Is Assortative Matching Efficient?,” \textit{Economic Theory}, 21, 2-3, 475-493.\\
+
+LeGros, P. and A. Newman (2007), “Beauty Is a Beast, Frog Is a Prince: Assortative Matching with Nontransferabilities” \textit{Econometrica}, 75, 4, 1073-1102.
+
+\end{hangparas}
+
+\end{document}

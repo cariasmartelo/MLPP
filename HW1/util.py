@@ -239,7 +239,7 @@ def convert_to_geopandas(df):
         return shape(x)
 
 
-    df['geometry'] = df.location.apply(shape_)
+    df['geometry'] = df['geometry'].apply(shape_)
     geo_df = gpd.GeoDataFrame(df, crs = 'epsg:4326', geometry = df['geometry'])
 
     return geo_df
