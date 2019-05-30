@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from sklearn import tree
 from shapely.geometry import Point
 import geopandas as gpd
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def load_from_csv(csv_file_path):
     '''
@@ -76,7 +76,7 @@ def create_outcome_var(projects_df, days):
     outcome_var = "not_funded_in_{}_days".format(days)
     df[outcome_var] = np.where(df['days_untill_funded'] > days, 1, 0)
 
-    return df
+    return df.drop('days_untill_funded', axis=1)
 
 
 def load_us_map(shapefile_path):
@@ -234,7 +234,7 @@ def summary_by_var(project_df, column, funct='mean', count=False):
     return sum_table
 
 
-def make_dummies_from_categorical(project_df, columns, dummy_na=False):
+def make_dummies_from_categorical(project_df, columns=None, dummy_na=False):
     '''
     Function that takes a Pandas DataFrame and creates dummy variables for 
     the columns specified. If dummy_na True, make dummy for NA values.
@@ -244,10 +244,9 @@ def make_dummies_from_categorical(project_df, columns, dummy_na=False):
     Output:
         Pandas Data Frame.
     '''
-    #df = project_df.loc[:]
-    #for col in columns:
-    dummies = pd.get_dummies(project_df, dummy_na=dummy_na, columns= columns)
-    #    df = df.join(dummies)
+    to_dummy = project_df.loc[:,project_df.nunique() < 100]
+
+    dummies = pd.get_dummies(to_dummy, dummy_na=dummy_na, columns=columns)
 
     return dummies
 
@@ -265,26 +264,30 @@ def delete_columns(project_df, columns):
     return df.drop(columns, axis=1)
 
 
-def discretize(serie, bins, equal_width=False, string=False):
+def discretize(project_df, bins, equal_width=False, string=True):
     '''
-    Function to discretize a pandas series based on number of bins and
-    wether bins are equal width, or have equal number of observations.
-    If string = True, returns string type.
+    Function that takes a Pandas DataFrame and creates discrete variables for 
+    the columns specified.
     Inputs:
-        serie: Pandas Series
+        projects_df: Pandas DataFrame
         bins: int(num of bins)
         equal_width: bool
+        string: book
     Output:
         Pandas Series.
     '''
-    if not equal_width:
-        return_serie =  pd.qcut(serie, bins)
-    else:
-        return_serie = pd.cut(serie, bins)
-    if string:
-        return_serie = return_serie.astype(str)
+    to_discretize = project_df.loc[:,(project_df.dtypes == 'int')\
+                                    | (project_df.dtypes == 'float')]
+    to_discretize = to_discretize.loc[:, to_discretize.nunique() > 30]
 
-    return return_serie
+    if not equal_width:
+        discretized =  to_discretize.apply(lambda x: pd.qcut(x, bins, labels=False))
+    else:
+        discretized =  to_discretize.apply(lambda x: pd.cut(x, bins, labels=False))
+    if string:
+        discretized = discretized.astype(str)
+
+    return pd.concat([project_df, discretized.add_prefix('discr_')], axis=1)
 
 
 def see_scatterplot(project_df, xcol, ycol, colorcol=None, logx=False,
@@ -324,20 +327,66 @@ def see_scatterplot(project_df, xcol, ycol, colorcol=None, logx=False,
     plt.show()
 
 
-def set_semester(date_series):
+def group_by_days(date_series, days):
     '''
     Returns a pandas Series that indicates the semester of the date series
     as an integer from 0 to 3 (0 -> first semester of 2012, 3-> last semester
     of 2013)
     Inputs:
         date_series: Datetime series
+    Output:
+        Pandas Series
     '''
-    bins = pd.date_range('2012-07-01', end='2014-1-31', freq='183d')
+    start = date_series.min() + timedelta(days = days)
+    end = date_series.max()
+    bins = pd.date_range(start, end=end, freq='{}d'.format(days))
 
-    def _semester(x, bins):
+    def _group(x, bins):
         rv = 0
         for i, v in enumerate(bins):
             if x >= v:
                 rv += 1
         return rv
-    return (date_series.apply(_semester, args=(bins,)), len(bins))
+    return (date_series.apply(_group, args=(bins,)), len(bins))
+
+def get_all_combinations(model_dict):
+    '''
+    From a dictionary with all the models and all the parameters, 
+    returns a dictionary of models mapped to a list of different
+    specifications.
+    Inputs:
+        model_dict: dict
+    Output:
+        dict
+    '''
+    #setting up all combinations
+    models = {}
+    for classifier, parameters in model_dict.items():
+        models[classifier] = []
+        keyword_params = [param for param in parameters]
+        options = [option for option in parameters.values()]
+        num_of_params = len(options)
+        combinations = []
+        for option_1 in options[0]:
+            if num_of_params < 2:
+                combinations.append((option_1,))
+                continue
+            for option_2 in options[1]:
+                if num_of_params < 3:
+                    combinations.append((option_1, option_2))
+                    continue
+                for option_3 in options[2]:
+                    if num_of_params < 4:
+                        combinations.append((option_1, option_2, option_3))
+                        continue
+                    for option_4 in options[3]:
+                        if num_of_params < 5:
+                            combinations.append((option_1, option_2, option_3, option_4))
+                            continue
+        for combination in combinations:
+            specification = {} 
+            for i, keyword_param in enumerate(keyword_params):
+                specification[keyword_param] = combination[i]
+            models[classifier].append(specification)
+    return models
+
