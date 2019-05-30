@@ -1,6 +1,21 @@
 # Machine Learning for Public Policy - Spring 2019
 
-## Homework 3
+## Homework 5
+
+Improving Pipeline of Homework 3.
+
+Improvements:
+
+-Feature generation after split
+
+-Includes Bagging
+
+-Calculares precision and recall for top-k% and not for absolute threshold. The same for the plots.
+
+-Uses one function called run_model to build any classifier
+
+-Runs every classifier with different parameters
+
 
 ### Organization:
 - report.pdf: PDF report of prediction.
